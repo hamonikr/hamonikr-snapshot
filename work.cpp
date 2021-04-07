@@ -100,9 +100,11 @@ void Work::cleanUp()
     if (QFileInfo::exists("/tmp/installed-to-live/cleanup.conf"))
         system("installed-to-live cleanup");
 
+    //check hamonikr
     if (!settings->live && !settings->reset_accounts)
         system("rm /home/*/Desktop/minstall.desktop 2>/dev/null");
 
+    //check hamonikr
     if (!settings->live) QFile::remove("/etc/skel/Desktop/Installer.desktop");
 
     initrd_dir.remove();
@@ -124,6 +126,22 @@ void Work::closeInitrd(const QString &initrd_dir, const QString &file)
     QString cmd = "(find . | cpio -o -H newc --owner root:root | gzip -9) >\"" + file + "\"";
     settings->shell->run(cmd);
     makeChecksum(HashType::md5, settings->work_dir + "/iso-template/antiX", "initrd.gz");
+
+// TO-DO 하모니카는 initrd.lz 형식이므로 수정필요
+//    //20.04버전에서 사용하는 방식은 (early, early2, main 존재) - unpack initrd.lz
+//     unmkinitramfs -v initrd.lz .  > /dev/null 2>&1
+//     sudo cp -r newmain/* main/
+//     sudo rm initrd.lz
+
+//     echo "${green}#### Create Kernel image... ${reset}"
+//     //repack initrd.lz
+//     cd ${UPSTREAMDIR}/casper/initrd-tmp/early
+//     sudo find . -print0 | sudo cpio --null --create --format=newc | sudo tee ${UPSTREAMDIR}/casper/initrd.lz > /dev/null 2>&1
+//     cd ${UPSTREAMDIR}/casper/initrd-tmp/early2
+//     sudo find kernel -print0 | sudo cpio --null --create --format=newc | sudo tee -a ${UPSTREAMDIR}/casper/initrd.lz > /dev/null 2>&1
+//     cd ${UPSTREAMDIR}/casper/initrd-tmp/main
+//     sudo find . | sudo cpio --create --format=newc | xz --format=lzma | sudo tee -a ${UPSTREAMDIR}/casper/initrd.lz > /dev/null 2>&1
+
 }
 
 

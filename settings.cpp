@@ -126,7 +126,7 @@ QString Settings::getEditor()
         editor = shell->getCmdOut("grep -m1 ^Exec " + desktop_file + " |cut -d= -f2 |cut -d\" \" -f1", true);
         if (editor.isEmpty() || system("command -v " + editor.toUtf8()) != 0) { // if default one doesn't exit use nano as backup editor
             editor = "x-terminal-emulator -e nano";
-        } else if (editor == "kate" || editor == "kwrite") { // need to run these as normal user
+        } else if (editor == "kate" || editor == "kwrite" || editor == "xed") { // need to run these as normal user
             editor = "runuser -u $(logname) " + editor;
         }
     } else {
@@ -303,7 +303,8 @@ QString Settings::getUsedSpace()
 // Check if running from a 32bit environment
 bool Settings::isi686()
 {
-    return (shell->getCmdOut("uname -m", true) == "i686");
+    // return (shell->getCmdOut("uname -m", true) == "i686");
+    return (shell->getCmdOut("uname -m", true) == "x86_64");
 }
 
 // Check if running from a live envoronment
@@ -456,7 +457,7 @@ void Settings::loadConfig()
     compression = settings.value("compression", "lz4").toString();
     mksq_opt = settings.value("mksq_opt").toString();
     edit_boot_menu = settings.value("edit_boot_menu", "no").toString() == "no" ? false : true;
-    gui_editor.setFileName(settings.value("gui_editor", "/usr/bin/featherpad").toString());
+    gui_editor.setFileName(settings.value("gui_editor", "/usr/bin/xed").toString());
     stamp = settings.value("stamp").toString();
     force_installer = settings.value("force_installer", "true").toBool();
     reset_accounts = false;
@@ -529,7 +530,7 @@ void Settings::setMonthlySnapshot(const QCommandLineParser &arg_parser)
         name = shell->getCmdOut("cat /etc/mx-version | cut -f1 -d' '");
     } else {
         qDebug() << "/etc/mx-version not found. Not MX Linux?";
-        name = "MX_" + QString(i686 ? "386" : "x64");
+        name = "HamoniKR_" + QString(i686 ? "386" : "x64");
     }
     if (arg_parser.value("file").isEmpty())
         snapshot_name = name.section("_", 0, 0) + "_" + QDate::currentDate().toString("MMMM") + "_" + name.section("_", 1, 1) + ".iso";
