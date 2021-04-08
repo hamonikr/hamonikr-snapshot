@@ -1,10 +1,11 @@
-help/*				usr/share/doc/mx-snapshot
-manual/mx-snapshot.8.gz		usr/share/man/man8
-icons/mx-snapshot.png		usr/share/icons/hicolor/48x48/apps
-icons/mx-snapshot.svg		usr/share/icons/hicolor/scalable/apps
-mx-snapshot			usr/bin
-mx-snapshot-exclude.list	etc
-mx-snapshot.conf		etc
-mx-snapshot.desktop		usr/share/applications
-scripts/*			usr/share/mx-packageinstaller/scripts
-translations/*.qm		usr/share/mx-snapshot/locale
+help/*				usr/share/doc/hamonikr-snapshot
+manual/hamonikr-snapshot.8.gz		usr/share/man/man8
+icons/hamonikr-snapshot.png		usr/share/icons/hicolor/48x48/apps
+icons/hamonikr-snapshot.svg		usr/share/icons/hicolor/scalable/apps
+hamonikr-snapshot			usr/bin
+hamonikr-snapshot-exclude.list	etc
+hamonikr-snapshot.conf		etc
+hamonikr-snapshot.desktop		usr/share/applications
+scripts/*			usr/share/hamonikr-snapshot/scripts
+translations/*.qm		usr/share/hamonikr-snapshot/locale
+usr

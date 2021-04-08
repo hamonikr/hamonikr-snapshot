@@ -1,15 +1,14 @@
-Source: mx-snapshot
+Source: hamonikr-snapshot
 Section: admin
 Priority: optional
-Maintainer: Adrian <adrian@mxlinux.org>
+Maintainer: Kevin <root@hamonikr.org>
 Build-Depends: debhelper (>=10), qtbase5-dev, qttools5-dev-tools
 Standards-Version: 3.9.8
-Vcs-Git: git://github.com/AdrianTM/mx-snapshot
+Vcs-Git: git://github.com/hamonikr/hamonikr-snapshot
 
-Package: mx-snapshot
+Package: hamonikr-snapshot
 Architecture: any
 Depends: menu,
-         mx-iso-template | iso-template (>= 16.1mx15) | hamonikr-iso-template,
          mx-remaster | hamonikr-remaster,
          mx-viewer | xdg-utils,
          squashfs-tools,
@@ -18,5 +17,6 @@ Depends: menu,
          xorriso (>= 1.4.6),
          ${misc:Depends},
          ${shlibs:Depends}
-Description: MX Snapshot
- MX Snapshot is a tool used for creating a live-CD from the running system.
+Replaces: hamonikr-iso-template         
+Description: HamoniKR Snapshot
+ Snapshot is a tool used for creating a live-CD from the running system.

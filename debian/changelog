@@ -1,8 +1,14 @@
-mx-snapshot (21.3.02hamonikr1) jin; urgency=medium
+hamonikr-snapshot (4.0.1) stable; urgency=medium
 
-  * apply to hamonikr-jin
+  * merge hamonikr-iso-template package to usr
 
- -- HamoniKR <pkg@hamonikr.org>  Wed, 07 Apr 2021 21:17:26 +0900
+ -- HamoniKR <pkg@hamonikr.org>  Thu, 08 Apr 2021 10:37:15 +0900
+
+hamonikr-snapshot (4.0.0) stable; urgency=medium
+
+  * release for HamoniKR 4.0
+
+ -- HamoniKR <pkg@hamonikr.org>  Tue, 06 Apr 2021 13:20:36 +0900
 
 mx-snapshot (21.3.02) mx; urgency=medium
 

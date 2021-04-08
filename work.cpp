@@ -100,11 +100,9 @@ void Work::cleanUp()
     if (QFileInfo::exists("/tmp/installed-to-live/cleanup.conf"))
         system("installed-to-live cleanup");
 
-    //check hamonikr
     if (!settings->live && !settings->reset_accounts)
         system("rm /home/*/Desktop/minstall.desktop 2>/dev/null");
 
-    //check hamonikr
     if (!settings->live) QFile::remove("/etc/skel/Desktop/Installer.desktop");
 
     initrd_dir.remove();
@@ -121,27 +119,30 @@ void Work::cleanUp()
 
 void Work::closeInitrd(const QString &initrd_dir, const QString &file)
 {
+    // https://wiki.ubuntu.com/CustomizeLiveInitrd
     qDebug() << "+++" << __PRETTY_FUNCTION__ << "+++";
     QDir::setCurrent(initrd_dir);
-    QString cmd = "(find . | cpio -o -H newc --owner root:root | gzip -9) >\"" + file + "\"";
+    // QString cmd = "(find . | cpio -o -H newc --owner root:root | gzip -9) >\"" + file + "\"";
+    // for lz
+    QString cmd = "(find . | cpio -o -H newc --owner root:root | lzma -7) >\"" + file + "\"";
     settings->shell->run(cmd);
-    makeChecksum(HashType::md5, settings->work_dir + "/iso-template/antiX", "initrd.gz");
 
-// TO-DO 하모니카는 initrd.lz 형식이므로 수정필요
-//    //20.04버전에서 사용하는 방식은 (early, early2, main 존재) - unpack initrd.lz
-//     unmkinitramfs -v initrd.lz .  > /dev/null 2>&1
-//     sudo cp -r newmain/* main/
-//     sudo rm initrd.lz
+    // repack initrd.lz
+    // QDir::setCurrent(initrd_dir + "/early");
+    // QString cmd = "(find . | cpio --null --create --format=newc --owner root:root) | tee \"" + file + "\"";
+    // settings->shell->run(cmd);
 
-//     echo "${green}#### Create Kernel image... ${reset}"
-//     //repack initrd.lz
-//     cd ${UPSTREAMDIR}/casper/initrd-tmp/early
-//     sudo find . -print0 | sudo cpio --null --create --format=newc | sudo tee ${UPSTREAMDIR}/casper/initrd.lz > /dev/null 2>&1
-//     cd ${UPSTREAMDIR}/casper/initrd-tmp/early2
-//     sudo find kernel -print0 | sudo cpio --null --create --format=newc | sudo tee -a ${UPSTREAMDIR}/casper/initrd.lz > /dev/null 2>&1
-//     cd ${UPSTREAMDIR}/casper/initrd-tmp/main
-//     sudo find . | sudo cpio --create --format=newc | xz --format=lzma | sudo tee -a ${UPSTREAMDIR}/casper/initrd.lz > /dev/null 2>&1
+    // QDir::setCurrent(initrd_dir + "/early2");
+    // cmd = "(find . | cpio --null --create --format=newc --owner root:root) | tee -a \"" + file + "\"";
+    // settings->shell->run(cmd);
 
+    // QDir::setCurrent(initrd_dir + "/main");
+    // cmd = "(find . | cpio --null --create --format=newc --owner root:root | xz --format=lzma) | tee -a \"" + file + "\"";
+    // settings->shell->run(cmd);
+
+    // QDir::setCurrent(initrd_dir);
+
+    makeChecksum(HashType::md5, settings->work_dir + "/iso-template/casper", "initrd.lz");
 }
 
 
@@ -149,14 +150,14 @@ void Work::closeInitrd(const QString &initrd_dir, const QString &file)
 void Work::copyModules(const QString &to, const QString &kernel)
 {
     QString kernel586 = "3.16.0-4-586";
-    QString cmd = QString("/usr/share/mx-packageinstaller/scripts/copy-initrd-modules -t=\"%1\" -k=\"%2\"").arg(to).arg(kernel);
+    QString cmd = QString("/usr/share/hamonikr-snapshot/scripts/copy-initrd-modules -t=\"%1\" -k=\"%2\"").arg(to).arg(kernel);
     settings->shell->run(cmd);
     // copy 586 modules for the non-PAE kernel
     if (settings->i686 && settings->debian_version < 9) {  // Not applicable for Stretch (MX17) or more
-        QString cmd = QString("/usr/share/mx-packageinstaller/scripts/copy-initrd-modules -t=\"%1\" -k=\"%2\"").arg(to).arg(kernel586);
+        QString cmd = QString("/usr/share/hamonikr-snapshot/scripts/copy-initrd-modules -t=\"%1\" -k=\"%2\"").arg(to).arg(kernel586);
         settings->shell->run(cmd);
     }
-    cmd = QString("/usr/share/mx-packageinstaller/scripts/copy-initrd-programs --to=\"%1\"").arg(to);
+    cmd = QString("/usr/share/hamonikr-snapshot/scripts/copy-initrd-programs --to=\"%1\"").arg(to);
     settings->shell->run(cmd);
 }
 
@@ -170,25 +171,28 @@ void Work::copyNewIso()
     QString cmd = "tar xf /usr/lib/iso-template/iso-template.tar.gz";
     settings->shell->run(cmd);
 
-    cmd = "cp /usr/lib/iso-template/template-initrd.gz iso-template/antiX/initrd.gz";
+    // cmd = "cp /usr/lib/iso-template/template-initrd.gz iso-template/antiX/initrd.gz";
+    cmd = "cp /usr/lib/iso-template/template-initrd.lz iso-template/casper/initrd.lz";
     settings->shell->run(cmd);
 
-    cmd = "cp /boot/vmlinuz-" + settings->kernel + " iso-template/antiX/vmlinuz";
+    // cmd = "cp /boot/vmlinuz-" + settings->kernel + " iso-template/antiX/vmlinuz";
+    cmd = "cp /boot/vmlinuz-" + settings->kernel + " iso-template/casper/vmlinuz";    
     settings->shell->run(cmd);
 
-    if (settings->debian_version < 9) { // Only for versions older than Stretch
-        if (settings->i686) {
-            settings->shell->run("cp /boot/vmlinuz-3.16.0-4-586 iso-template/antiX/vmlinuz1");
-        } else {
-            // mv x64 template files over
-            settings->shell->run("mv iso-template/boot/grub/grub.cfg_x64 iso-template/boot/grub/grub.cfg");
-            settings->shell->run("mv iso-template/boot/syslinux/syslinux.cfg_x64 iso-template/boot/syslinux/syslinux.cfg");
-            settings->shell->run("mv iso-template/boot/isolinux/isolinux.cfg_x64 iso-template/boot/isolinux/isolinux.cfg");
-        }
-    }
+    // // support x64 only
+    // if (settings->debian_version < 9) { // Only for versions older than Stretch
+    //     if (settings->i686) {
+    //         settings->shell->run("cp /boot/vmlinuz-3.16.0-4-586 iso-template/antiX/vmlinuz1");
+    //     } else {
+    //         // mv x64 template files over
+    //         settings->shell->run("mv iso-template/boot/grub/grub.cfg_x64 iso-template/boot/grub/grub.cfg");
+    //         settings->shell->run("mv iso-template/boot/syslinux/syslinux.cfg_x64 iso-template/boot/syslinux/syslinux.cfg");
+    //         settings->shell->run("mv iso-template/boot/isolinux/isolinux.cfg_x64 iso-template/boot/isolinux/isolinux.cfg");
+    //     }
+    // }
 
     replaceMenuStrings();
-    makeChecksum(HashType::md5, settings->work_dir + "/iso-template/antiX", "vmlinuz");
+    makeChecksum(HashType::md5, settings->work_dir + "/iso-template/casper", "vmlinuz");
 
     QString path = initrd_dir.path();
     if(!initrd_dir.isValid()) {
@@ -196,7 +200,7 @@ void Work::copyNewIso()
         cleanUp();
     }
 
-    openInitrd(settings->work_dir + "/iso-template/antiX/initrd.gz", path);
+    openInitrd(settings->work_dir + "/iso-template/casper/initrd.lz", path);
 
     // strip modules; make sure initrd_dir is correct to avoid disaster
     if (path.startsWith("/tmp/") && QFileInfo::exists(path + "/lib/modules"))
@@ -206,7 +210,8 @@ void Work::copyNewIso()
     settings->shell->run("test -r /etc/initrd-release && cp /etc/initrd-release \"" + path + "/etc\""); // overwrite with this file, probably a better location _if_ the file exists
     if (initrd_dir.isValid()) {
         copyModules(path, settings->kernel);
-        closeInitrd(path, settings->work_dir + "/iso-template/antiX/initrd.gz");
+        // closeInitrd(path, settings->work_dir + "/iso-template/antiX/initrd.gz");
+        closeInitrd(path, settings->work_dir + "/iso-template/casper/initrd.lz");
         initrd_dir.remove();
     }
 }
@@ -218,7 +223,10 @@ bool Work::createIso(const QString &filename)
     // squash the filesystem copy
     QDir::setCurrent(settings->work_dir);
     QString cmd;
-    cmd = "mksquashfs /.bind-root iso-template/antiX/linuxfs -comp " + settings->compression + ((settings->mksq_opt.isEmpty()) ? "" : " " + settings->mksq_opt)
+    // cmd = "mksquashfs /.bind-root iso-template/antiX/linuxfs -comp " + settings->compression + ((settings->mksq_opt.isEmpty()) ? "" : " " + settings->mksq_opt)
+    //         + " -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
+
+    cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -comp " + settings->compression + ((settings->mksq_opt.isEmpty()) ? "" : " " + settings->mksq_opt)
             + " -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
 
     emit message(tr("Squashing filesystem..."));
@@ -228,15 +236,15 @@ bool Work::createIso(const QString &filename)
     }
 
     // mv linuxfs to another folder
-    QDir().mkpath("iso-2/antiX");
-    settings->shell->run("mv iso-template/antiX/linuxfs* iso-2/antiX");
-    makeChecksum(HashType::md5, settings->work_dir + "/iso-2/antiX", "linuxfs");
+    QDir().mkpath("iso-2/casper");
+    settings->shell->run("mv iso-template/casper/filesystem.squashfs* iso-2/casper");
+    makeChecksum(HashType::md5, settings->work_dir + "/iso-2/casper", "filesystem.squashfs");
 
     settings->shell->run("installed-to-live cleanup");
 
     // create the iso file
     QDir::setCurrent(settings->work_dir + "/iso-template");
-    cmd = "xorriso -as mkisofs -l -V MXLIVE -R -J -pad -iso-level 3 -no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin  -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -c boot/isolinux/isolinux.cat -o \"" +
+    cmd = "xorriso -as mkisofs -l -V HAMONIKR -R -J -pad -iso-level 3 -no-emul-boot -boot-load-size 4 -boot-info-table -b isolinux/isolinux.bin  -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -c isolinux/isolinux.cat -o \"" +
             settings->snapshot_dir + "/" + filename + "\" . \""  + settings->work_dir + "/iso-2\"";
     emit message(tr("Creating CD/DVD image file..."));
     if (!settings->shell->run(cmd)) {
@@ -335,7 +343,9 @@ void Work::openInitrd(const QString &file, const QString &initrd_dir)
     QString cmd = "chmod a+rx \"" + initrd_dir + "\"";
     settings->shell->run(cmd);
     QDir::setCurrent(initrd_dir);
-    cmd = QString("gunzip -c \"%1\" | cpio -idum").arg(file);
+    // cmd = QString("gunzip -c \"%1\" | cpio -idum").arg(file);
+    // cmd = QString("unmkinitramfs -v " + file + " .");
+    cmd = QString("unmkinitramfs " + file + " .");
     settings->shell->run(cmd);
 }
 
@@ -344,60 +354,66 @@ void Work::replaceMenuStrings() {
     qDebug() << "+++" << __PRETTY_FUNCTION__ << "+++";
 
     QString distro, full_distro_name;
-    if (QFileInfo::exists("/etc/antix-version")) {
-        distro = settings->shell->getCmdOut("cat /etc/antix-version | cut -f1 -d'_'");
-        full_distro_name = settings->shell->getCmdOut("cat /etc/antix-version | cut -f-2 -d' '");
+    if (QFileInfo::exists("/etc/lsb-release")) {
+        distro = settings->shell->getCmdOut("lsb_release -d -s | cut -f1 -d' '");
+        full_distro_name = settings->shell->getCmdOut("lsb_release -d -s");
     } else {
-        distro = "MX_" + QString(settings->i686 ? "386" : "x64");
+        distro = "HamoniKR_" + QString(settings->i686 ? "386" : "x64");
         full_distro_name = distro;
     }
-    QString date = QDate::currentDate().toString("dd MMMM yyyy");
+    QString date = QDate::currentDate().toString("yyyy-MM-dd");
     if (not QFileInfo::exists("/etc/lsb-release")) {
         emit messageBox(BoxType::critical, tr("Error"), tr("Could not find %1 file, cannot continue").arg("/etc/lsb-release"));
         cleanUp();
     }
     QString distro_name = settings->shell->getCmdOut("grep -oP '(?<=DISTRIB_ID=).*' /etc/lsb-release");
-    QString code_name = settings->shell->getCmdOut("grep -oP '(?<=DISTRIB_CODENAME=).*' /etc/lsb-release");
+    QString code_name = settings->shell->getCmdOut("grep -oP '(?<=HAMONIKR_CODENAME=).*' /etc/lsb-release");
     QString options = "quiet";
 
-    if (settings->debian_version < 9) { // Only for versions older than Stretch which uses old mx-iso-template
-        if (settings->i686) {
-            QString new_string = "MX Linux 386 (" + date + ")";
-            replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
-            replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
-            replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
-        } else {
-            QString new_string = "MX Linux x64 (" + date + ")";
-            replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
-            replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
-            replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
-        }
+    replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
+    replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/isolinux/isolinux.cfg");
+    replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
+    replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/isolinux/isolinux.cfg");
+    replaceStringInFile("%CODE_NAME%", code_name, settings->work_dir + "/iso-template/isolinux/isolinux.cfg");
 
-    } else { // with new mx-iso-template for MX-17 and greater
-        replaceStringInFile("%DISTRO_NAME%", distro_name, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
+    // if (settings->debian_version < 9) { // Only for versions older than Stretch which uses old mx-iso-template
+    //     if (settings->i686) {
+    //         QString new_string = "MX Linux 386 (" + date + ")";
+    //         replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
+    //         replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
+    //         replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
+    //     } else {
+    //         QString new_string = "MX Linux x64 (" + date + ")";
+    //         replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
+    //         replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
+    //         replaceStringInFile("custom-name", new_string, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
+    //     }
 
-        replaceStringInFile("%OPTIONS%", options, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
-        replaceStringInFile("%OPTIONS%", options, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
+    // } else { // with new mx-iso-template for MX-17 and greater
+    //     replaceStringInFile("%DISTRO_NAME%", distro_name, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
 
-        replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
-        replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
-        replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/syslinux/readme.msg");
-        replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
-        replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/isolinux/readme.msg");
+    //     replaceStringInFile("%OPTIONS%", options, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
+    //     replaceStringInFile("%OPTIONS%", options, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
 
-        replaceStringInFile("%DISTRO%", distro, settings->work_dir + "/iso-template/boot/grub/theme/theme.txt");
-        replaceStringInFile("%DISTRO%", distro, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
+    //     replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
+    //     replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
+    //     replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/syslinux/readme.msg");
+    //     replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
+    //     replaceStringInFile("%FULL_DISTRO_NAME%", full_distro_name, settings->work_dir + "/iso-template/boot/isolinux/readme.msg");
 
-        replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
-        replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
-        replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/syslinux/readme.msg");
-        replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
-        replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/isolinux/readme.msg");
+    //     replaceStringInFile("%DISTRO%", distro, settings->work_dir + "/iso-template/boot/grub/theme/theme.txt");
+    //     replaceStringInFile("%DISTRO%", distro, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
 
-        replaceStringInFile("%CODE_NAME%", code_name, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
-        replaceStringInFile("%CODE_NAME%", code_name, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
-        replaceStringInFile("%ASCII_CODE_NAME%", code_name, settings->work_dir + "/iso-template/boot/grub/theme/theme.txt");
-    }
+    //     replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/grub/grub.cfg");
+    //     replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
+    //     replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/syslinux/readme.msg");
+    //     replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
+    //     replaceStringInFile("%RELEASE_DATE%", date, settings->work_dir + "/iso-template/boot/isolinux/readme.msg");
+
+    //     replaceStringInFile("%CODE_NAME%", code_name, settings->work_dir + "/iso-template/boot/syslinux/syslinux.cfg");
+    //     replaceStringInFile("%CODE_NAME%", code_name, settings->work_dir + "/iso-template/boot/isolinux/isolinux.cfg");
+    //     replaceStringInFile("%ASCII_CODE_NAME%", code_name, settings->work_dir + "/iso-template/boot/grub/theme/theme.txt");
+    // }
 }
 
 // Util function for replacing strings in files
@@ -422,7 +438,7 @@ void Work::setupEnv()
 {
     qDebug() << "+++" << __PRETTY_FUNCTION__ << "+++";
     // checks if work_dir looks OK
-    if (!settings->work_dir.contains("/mx-snapshot"))
+    if (!settings->work_dir.contains("/hamonikr-snapshot"))
         cleanUp();
 
     QString bind_boot = "";
@@ -433,11 +449,12 @@ void Work::setupEnv()
     }
 
     // install mx-installer if absent
-    if (settings->force_installer && !checkInstalled("mx-installer"))
-        installPackage("mx-installer");
+    // if (settings->force_installer && !checkInstalled("mx-installer"))
+    //     installPackage("mx-installer");
 
     writeSnapshotInfo();
 
+    // TODO - NEED TESTING
     // setup environment if creating a respin (reset root/demo, remove personal accounts)
     if (settings->reset_accounts) {
         settings->shell->run("installed-to-live -b /.bind-root start " + bind_boot + "empty=/home general version-file read-only");

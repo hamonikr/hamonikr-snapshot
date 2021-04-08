@@ -100,7 +100,7 @@ bool Settings::checkSnapshotDir()
 bool Settings::checkTempDir()
 {
     qDebug() << "+++" << __PRETTY_FUNCTION__ << "+++";
-    tmpdir.reset(new QTemporaryDir(tempdir_parent + "/mx-snapshot-XXXXXXXX"));
+    tmpdir.reset(new QTemporaryDir(tempdir_parent + "/hamonikr-snapshot-XXXXXXXX"));
     if(!tmpdir->isValid()) {
         qDebug() << QObject::tr("Could not create temp directory. ") + tmpdir.data()->path();
         return false;
@@ -108,7 +108,8 @@ bool Settings::checkTempDir()
     work_dir = tmpdir.data()->path();
     free_space_work = getFreeSpace(work_dir);
 
-    QDir().mkpath(work_dir + "/iso-template/antiX");
+    // QDir().mkpath(work_dir + "/iso-template/antiX");
+    QDir().mkpath(work_dir + "/iso-template");
     return true;
 }
 
@@ -126,7 +127,7 @@ QString Settings::getEditor()
         editor = shell->getCmdOut("grep -m1 ^Exec " + desktop_file + " |cut -d= -f2 |cut -d\" \" -f1", true);
         if (editor.isEmpty() || system("command -v " + editor.toUtf8()) != 0) { // if default one doesn't exit use nano as backup editor
             editor = "x-terminal-emulator -e nano";
-        } else if (editor == "kate" || editor == "kwrite" || editor == "xed") { // need to run these as normal user
+        } else if (editor == "kate" || editor == "kwrite") { // need to run these as normal user
             editor = "runuser -u $(logname) " + editor;
         }
     } else {
@@ -255,7 +256,8 @@ quint64 Settings::getLiveRootSpace()
 
     // load some live variables
     QSettings livesettings("/live/config/initrd.out", QSettings::NativeFormat);
-    QString sqfile_full = livesettings.value("SQFILE_FULL", "/live/boot-dev/antiX/linuxfs").toString();
+    // QString sqfile_full = livesettings.value("SQFILE_FULL", "/live/boot-dev/antiX/linuxfs").toString();
+    QString sqfile_full = livesettings.value("SQFILE_FULL", "/live/boot-dev/casper/filesystem.squashfs").toString();
 
     // get compression factor by reading the linuxfs squasfs file, if available
     QString linuxfs_compression_type = shell->getCmdOut("dd if=" + sqfile_full + " bs=1 skip=20 count=2 status=none 2>/dev/null |od -An -tdI");
@@ -303,8 +305,7 @@ QString Settings::getUsedSpace()
 // Check if running from a 32bit environment
 bool Settings::isi686()
 {
-    // return (shell->getCmdOut("uname -m", true) == "i686");
-    return (shell->getCmdOut("uname -m", true) == "x86_64");
+    return (shell->getCmdOut("uname -m", true) == "i686");
 }
 
 // Check if running from a live envoronment
@@ -450,14 +451,14 @@ void Settings::loadConfig()
     session_excludes = "";
     snapshot_dir = settings.value("snapshot_dir", "/home/snapshot").toString();
     if (not snapshot_dir.endsWith("/snapshot")) snapshot_dir += (snapshot_dir.endsWith("/") ? "snapshot" : "/snapshot");
-    snapshot_excludes.setFileName(settings.value("snapshot_excludes", "/usr/local/share/excludes/mx-snapshot-exclude.list").toString());
+    snapshot_excludes.setFileName(settings.value("snapshot_excludes", "/usr/local/share/excludes/hamonikr-snapshot-exclude.list").toString());
     snapshot_basename = settings.value("snapshot_basename", "snapshot").toString();
     make_chksum = settings.value("make_md5sum", "no").toString() == "no" ? false : true;
     make_isohybrid = settings.value("make_isohybrid", "yes").toString() == "yes" ? true : false;
     compression = settings.value("compression", "lz4").toString();
     mksq_opt = settings.value("mksq_opt").toString();
     edit_boot_menu = settings.value("edit_boot_menu", "no").toString() == "no" ? false : true;
-    gui_editor.setFileName(settings.value("gui_editor", "/usr/bin/xed").toString());
+    gui_editor.setFileName(settings.value("gui_editor", "/usr/bin/featherpad").toString());
     stamp = settings.value("stamp").toString();
     force_installer = settings.value("force_installer", "true").toBool();
     reset_accounts = false;
@@ -530,7 +531,7 @@ void Settings::setMonthlySnapshot(const QCommandLineParser &arg_parser)
         name = shell->getCmdOut("cat /etc/mx-version | cut -f1 -d' '");
     } else {
         qDebug() << "/etc/mx-version not found. Not MX Linux?";
-        name = "HamoniKR_" + QString(i686 ? "386" : "x64");
+        name = "MX_" + QString(i686 ? "386" : "x64");
     }
     if (arg_parser.value("file").isEmpty())
         snapshot_name = name.section("_", 0, 0) + "_" + QDate::currentDate().toString("MMMM") + "_" + name.section("_", 1, 1) + ".iso";

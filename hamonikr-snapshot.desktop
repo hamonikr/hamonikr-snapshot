@@ -1,0 +1,14 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=HamoniKR Snapshot
+Name[ko]=하모니카 스냅샷
+Comment=Create a live iso snapshot of your running system.
+Comment[ko]=사용 중인 시스템을 ISO 이미지로 생성하는 도구.
+Exec=su-to-root -X -c hamonikr-snapshot
+Terminal=false
+Type=Application
+Icon=hamonikr-snapshot
+Categories=GNOME;GTK;System;
+NoDisplay=false
+Keywords=snapshot;스냅샷;백업;backup;iso;
+
