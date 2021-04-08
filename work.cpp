@@ -235,6 +235,14 @@ bool Work::createIso(const QString &filename)
         return false;
     }
 
+    // Update the filesystem.size file, which is needed by the installer
+    cmd = "du -sx --block-size=1 /.bind-root | cut -f1 >iso-template/casper/filesystem.size";
+    settings->shell->run(cmd)
+
+    // "Remove old md5sum.txt and calculate new md5 sums
+    cmd = "find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat >iso-template/md5sum.txt";
+    settings->shell->run(cmd)    
+
     // mv linuxfs to another folder
     QDir().mkpath("iso-2/casper");
     settings->shell->run("mv iso-template/casper/filesystem.squashfs* iso-2/casper");
@@ -244,7 +252,7 @@ bool Work::createIso(const QString &filename)
 
     // create the iso file
     QDir::setCurrent(settings->work_dir + "/iso-template");
-    cmd = "xorriso -as mkisofs -l -V HAMONIKR -R -J -pad -iso-level 3 -no-emul-boot -boot-load-size 4 -boot-info-table -b isolinux/isolinux.bin  -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -c isolinux/isolinux.cat -o \"" +
+    cmd = "xorriso -as mkisofs -l -V HamoniKR-LIVE -R -J -pad -iso-level 3 -no-emul-boot -boot-load-size 4 -boot-info-table -b isolinux/isolinux.bin  -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -c isolinux/isolinux.cat -o \"" +
             settings->snapshot_dir + "/" + filename + "\" . \""  + settings->work_dir + "/iso-2\"";
     emit message(tr("Creating CD/DVD image file..."));
     if (!settings->shell->run(cmd)) {
@@ -428,9 +436,15 @@ void Work::savePackageList(const QString &file_name)
 {
     qDebug() << "+++" << __PRETTY_FUNCTION__ << "+++";
     QFileInfo fi(file_name);
-    QString full_name = settings->work_dir + "/iso-template/" + fi.completeBaseName() + "/package_list";
-    QString cmd = "dpkg -l | grep ^ii\\ \\ | awk '{print $2,$3}' | sed 's/:'$(dpkg --print-architecture)'//' | column -t >\"" + full_name + "\"";
+    // QString full_name = settings->work_dir + "/iso-template/" + fi.completeBaseName() + "/package_list";
+    QString full_name = settings->work_dir + "/iso-template/casper/filesystem.manifest";
+    // QString cmd = "dpkg -l | grep ^ii\\ \\ | awk '{print $2,$3}' | sed 's/:'$(dpkg --print-architecture)'//' | column -t >\"" + full_name + "\"";
+    QString cmd = "dpkg-query -W --showformat='${Package} ${Version}\n' >\"" + full_name + "\"";    
     settings->shell->run(cmd);
+
+    QString desktop_full_name = settings->work_dir + "/iso-template/casper/filesystem.manifest-desktop";
+    cmd = "cp " + full_name + " " + desktop_full_name ;    
+    settings->shell->run(cmd);    
 }
 
 // setup the environment before taking the snapshot
