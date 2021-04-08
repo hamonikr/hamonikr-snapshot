@@ -237,11 +237,11 @@ bool Work::createIso(const QString &filename)
 
     // Update the filesystem.size file, which is needed by the installer
     cmd = "du -sx --block-size=1 /.bind-root | cut -f1 >iso-template/casper/filesystem.size";
-    settings->shell->run(cmd)
+    settings->shell->run(cmd);
 
     // "Remove old md5sum.txt and calculate new md5 sums
     cmd = "find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat >iso-template/md5sum.txt";
-    settings->shell->run(cmd)    
+    settings->shell->run(cmd);   
 
     // mv linuxfs to another folder
     QDir().mkpath("iso-2/casper");
