@@ -40,7 +40,6 @@ Usage
 DEFAULT_LIST="
 aufs
 battery
-block
 btrfs
 cdrom
 crc16
@@ -50,8 +49,6 @@ crc32-pclmul
 crct10dif-common
 crct10dif-generic
 crct10dif-pclmul
-cryptsetup
-dmsetup
 ecb
 ehci-hcd
 ehci-pci
@@ -64,7 +61,6 @@ firewire-core
 firewire-ohci
 firewire-sbp2
 fotg210-hcd
-fusbh200-hcd
 fuse
 hid
 hid-apple
@@ -72,7 +68,6 @@ hid-belkin
 hid-cherry
 hid-generic
 hid-hyperv
-hid-lenovo-tpkbd
 hid-logitech
 hid-logitech-dj
 hid-logitech-hidpp
@@ -84,11 +79,9 @@ hv_vmbus
 hv_utils
 hv_storvsc
 hv_netvsc
-hyperv
 hyperv-keyboard
 hyperv_fb
 isofs
-jbd
 jbd2
 jfs
 libcrc32c
@@ -108,11 +101,9 @@ ohci-hcd
 ohci-pci
 overlay
 pci-hyperv
-pcie-aspm
 printk
 pstore
 reiserfs
-rts5139
 scsi-mod
 scsi-transport-fc
 sdhci

@@ -1,3 +1,9 @@
+hamonikr-snapshot (4.0.2) stable; urgency=medium
+
+  * fix - create initrd.lz 
+
+ -- HamoniKR <pkg@hamonikr.org>  Fri, 09 Apr 2021 14:08:32 +0900
+
 hamonikr-snapshot (4.0.1) stable; urgency=medium
 
   * merge hamonikr-iso-template package to usr

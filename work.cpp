@@ -124,23 +124,23 @@ void Work::closeInitrd(const QString &initrd_dir, const QString &file)
     QDir::setCurrent(initrd_dir);
     // QString cmd = "(find . | cpio -o -H newc --owner root:root | gzip -9) >\"" + file + "\"";
     // for lz
-    QString cmd = "(find . | cpio -o -H newc --owner root:root | lzma -7) >\"" + file + "\"";
-    settings->shell->run(cmd);
+    // QString cmd = "(find . | cpio -o -H newc --owner root:root | lzma -7) >\"" + file + "\"";
+    // settings->shell->run(cmd);
 
     // repack initrd.lz
-    // QDir::setCurrent(initrd_dir + "/early");
-    // QString cmd = "(find . | cpio --null --create --format=newc --owner root:root) | tee \"" + file + "\"";
-    // settings->shell->run(cmd);
+    QDir::setCurrent(initrd_dir + "/new-initrd/early");
+    QString cmd = "(find . -print0 | cpio --null --create --format=newc --owner root:root) >\"" + file + "\"";
+    settings->shell->run(cmd);
 
-    // QDir::setCurrent(initrd_dir + "/early2");
-    // cmd = "(find . | cpio --null --create --format=newc --owner root:root) | tee -a \"" + file + "\"";
-    // settings->shell->run(cmd);
+    QDir::setCurrent(initrd_dir + "/new-initrd/early2");
+    cmd = "(find . -print0 | cpio --null --create --format=newc --owner root:root) >>\"" + file + "\"";
+    settings->shell->run(cmd);
 
-    // QDir::setCurrent(initrd_dir + "/main");
-    // cmd = "(find . | cpio --null --create --format=newc --owner root:root | xz --format=lzma) | tee -a \"" + file + "\"";
-    // settings->shell->run(cmd);
+    QDir::setCurrent(initrd_dir + "/new-initrd/main");
+    cmd = "(find . -print0 | cpio --null --create --format=newc --owner root:root | xz --format=lzma) >>\"" + file + "\"";
+    settings->shell->run(cmd);
 
-    // QDir::setCurrent(initrd_dir);
+    QDir::setCurrent(initrd_dir);
 
     makeChecksum(HashType::md5, settings->work_dir + "/iso-template/casper", "initrd.lz");
 }
@@ -353,7 +353,8 @@ void Work::openInitrd(const QString &file, const QString &initrd_dir)
     QDir::setCurrent(initrd_dir);
     // cmd = QString("gunzip -c \"%1\" | cpio -idum").arg(file);
     // cmd = QString("unmkinitramfs -v " + file + " .");
-    cmd = QString("unmkinitramfs " + file + " .");
+    // cmd = QString("unmkinitramfs " + file + " .");
+    cmd = QString("unmkinitramfs " + file + " new-initrd");
     settings->shell->run(cmd);
 }
 
@@ -441,6 +442,11 @@ void Work::savePackageList(const QString &file_name)
     // QString cmd = "dpkg -l | grep ^ii\\ \\ | awk '{print $2,$3}' | sed 's/:'$(dpkg --print-architecture)'//' | column -t >\"" + full_name + "\"";
     QString cmd = "dpkg-query -W --showformat='${Package} ${Version}\n' >\"" + full_name + "\"";    
     settings->shell->run(cmd);
+
+    // remove snapshot-yyyyMMdd_int in /iso/template
+    QString cmd = "rm -rf " + settings->work_dir + "/iso-template/" + fi.completeBaseName();    
+    settings->shell->run(cmd);    
+
 
     QString desktop_full_name = settings->work_dir + "/iso-template/casper/filesystem.manifest-desktop";
     cmd = "cp " + full_name + " " + desktop_full_name ;    
