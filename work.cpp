@@ -444,9 +444,8 @@ void Work::savePackageList(const QString &file_name)
     settings->shell->run(cmd);
 
     // remove snapshot-yyyyMMdd_int in /iso/template
-    QString cmd = "rm -rf " + settings->work_dir + "/iso-template/" + fi.completeBaseName();    
+    cmd = "rm -rf " + settings->work_dir + "/iso-template/" + fi.completeBaseName();    
     settings->shell->run(cmd);    
-
 
     QString desktop_full_name = settings->work_dir + "/iso-template/casper/filesystem.manifest-desktop";
     cmd = "cp " + full_name + " " + desktop_full_name ;    
