@@ -140,6 +140,9 @@ void Work::closeInitrd(const QString &initrd_dir, const QString &file)
     cmd = "(find . -print0 | cpio --null --create --format=newc --owner root:root | xz --format=lzma) >>\"" + file + "\"";
     settings->shell->run(cmd);
 
+    cmd = "chmod" + file + "\"";
+    settings->shell->run(cmd);
+
     QDir::setCurrent(initrd_dir);
 
     makeChecksum(HashType::md5, settings->work_dir + "/iso-template/casper", "initrd.lz");
@@ -239,8 +242,9 @@ bool Work::createIso(const QString &filename)
     cmd = "du -sx --block-size=1 /.bind-root | cut -f1 >iso-template/casper/filesystem.size";
     settings->shell->run(cmd);
 
+    QDir::setCurrent(settings->work_dir + "/iso-template");
     // "Remove old md5sum.txt and calculate new md5 sums
-    cmd = "find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat >iso-template/md5sum.txt";
+    cmd = "find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat >md5sum.txt";
     settings->shell->run(cmd);   
 
     // mv linuxfs to another folder
