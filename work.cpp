@@ -248,6 +248,7 @@ bool Work::createIso(const QString &filename)
     settings->shell->run(cmd);   
 
     // mv linuxfs to another folder
+    QDir::setCurrent(settings->work_dir);        
     QDir().mkpath("iso-2/casper");
     settings->shell->run("mv iso-template/casper/filesystem.squashfs* iso-2/casper");
     makeChecksum(HashType::md5, settings->work_dir + "/iso-2/casper", "filesystem.squashfs");
