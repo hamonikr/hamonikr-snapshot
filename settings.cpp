@@ -451,14 +451,14 @@ void Settings::loadConfig()
     session_excludes = "";
     snapshot_dir = settings.value("snapshot_dir", "/home/snapshot").toString();
     if (not snapshot_dir.endsWith("/snapshot")) snapshot_dir += (snapshot_dir.endsWith("/") ? "snapshot" : "/snapshot");
-    snapshot_excludes.setFileName(settings.value("snapshot_excludes", "/usr/local/share/excludes/hamonikr-snapshot-exclude.list").toString());
+    snapshot_excludes.setFileName(settings.value("snapshot_excludes", "/etc/hamonikr-snapshot-exclude.list").toString());
     snapshot_basename = settings.value("snapshot_basename", "snapshot").toString();
     make_chksum = settings.value("make_md5sum", "no").toString() == "no" ? false : true;
     make_isohybrid = settings.value("make_isohybrid", "yes").toString() == "yes" ? true : false;
     compression = settings.value("compression", "lz4").toString();
     mksq_opt = settings.value("mksq_opt").toString();
     edit_boot_menu = settings.value("edit_boot_menu", "no").toString() == "no" ? false : true;
-    gui_editor.setFileName(settings.value("gui_editor", "/usr/bin/featherpad").toString());
+    gui_editor.setFileName(settings.value("gui_editor", "/usr/bin/xed").toString());
     stamp = settings.value("stamp").toString();
     force_installer = settings.value("force_installer", "true").toBool();
     reset_accounts = false;
