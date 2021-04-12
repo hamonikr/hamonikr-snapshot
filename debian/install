@@ -9,3 +9,4 @@ hamonikr-snapshot.desktop		usr/share/applications
 scripts/*			usr/share/hamonikr-snapshot/scripts
 translations/*.qm		usr/share/hamonikr-snapshot/locale
 usr
+installed-to-live    /usr/sbin

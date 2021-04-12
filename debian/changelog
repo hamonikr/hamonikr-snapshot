@@ -1,3 +1,9 @@
+hamonikr-snapshot (4.1.0) stable; urgency=medium
+
+  * merge hamonikr-remaster package
+
+ -- HamoniKR <pkg@hamonikr.org>  Mon, 12 Apr 2021 10:33:01 +0900
+
 hamonikr-snapshot (4.0.3) stable; urgency=medium
 
   * update hamonikr-snapshot-exclude.list

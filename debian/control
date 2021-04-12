@@ -9,8 +9,7 @@ Vcs-Git: git://github.com/hamonikr/hamonikr-snapshot
 Package: hamonikr-snapshot
 Architecture: any
 Depends: menu,
-         mx-remaster | hamonikr-remaster,
-         mx-viewer | xdg-utils,
+         xdg-utils,
          squashfs-tools,
          syslinux-utils,
          xdg-user-dirs,
