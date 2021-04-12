@@ -29,7 +29,7 @@ REAL_ROOT=/
 WORK_DIR=/tmp/$ME
 
 EXCLUDES_DIR=/usr/local/share/excludes
-VERSION_FILE=/etc/live/version/linuxfs.ver
+VERSION_FILE=/etc/hamonikr/linuxfs.ver
 
 CONF_FILE=$WORK_DIR/cleanup.conf
 
@@ -41,8 +41,7 @@ DEF_REPO="us"
 PRETEND=
 
 PW_FILES="/etc/passwd /etc/shadow /etc/gshadow /etc/group"
-# MUNGE_FILES="/etc/slim.conf /etc/lightdm/lightdm.conf"
-MUNGE_FILES=""
+MUNGE_FILES="/etc/lightdm/lightdm.conf"
 BIND_FILES="$PW_FILES"
 
 # LIVE_FILE_LIST="

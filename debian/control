@@ -16,6 +16,6 @@ Depends: menu,
          xorriso (>= 1.4.6),
          ${misc:Depends},
          ${shlibs:Depends}
-Replaces: hamonikr-iso-template         
+Replaces: hamonikr-iso-template, antix-libs         
 Description: HamoniKR Snapshot
  Snapshot is a tool used for creating a live-CD from the running system.

@@ -1,3 +1,9 @@
+hamonikr-snapshot (4.1.1) stable; urgency=medium
+
+  * merge antix-lib package
+
+ -- HamoniKR <pkg@hamonikr.org>  Mon, 12 Apr 2021 18:12:53 +0900
+
 hamonikr-snapshot (4.1.0) stable; urgency=medium
 
   * merge hamonikr-remaster package

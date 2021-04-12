@@ -10,6 +10,7 @@ swapfile
 tmp
 tmpdir
 dev/*
+cdrom
 cdrom/*
 live/*
 media/*
@@ -83,6 +84,7 @@ home/*/.macromedia
 home/*/.thumbnails/*
 home/*/.Trash*
 home/*/.local/share/Trash/*
+home/*/.cache/socket
 # home/*/.cache
 home/*/.gvfs
 home/*/.bash_history
