@@ -245,7 +245,9 @@ bool Work::createIso(const QString &filename)
     QDir::setCurrent(settings->work_dir + "/iso-template");
     // "Remove old md5sum.txt and calculate new md5 sums
     cmd = "find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat >md5sum.txt";
-    settings->shell->run(cmd);   
+    settings->shell->run(cmd);
+    cmd = "find -type f -print0 | xargs -0 md5sum | grep -v isolinux/boot.cat >MD5SUMS";
+    settings->shell->run(cmd);    
 
     // mv linuxfs to another folder
     QDir::setCurrent(settings->work_dir);        
