@@ -208,11 +208,11 @@ bool Work::createIso(const QString &filename)
     // squash the filesystem copy
     QDir::setCurrent(settings->work_dir);
     QString cmd;
-    cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -comp " + settings->compression + ((settings->mksq_opt.isEmpty()) ? "" : " " + settings->mksq_opt)
-             + " -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;    
+    // cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -comp " + settings->compression + ((settings->mksq_opt.isEmpty()) ? "" : " " + settings->mksq_opt)
+    //          + " -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;    
 
     // Removed compression options
-    // cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
+    cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -b 1048576 -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
 
     emit message(tr("Squashing filesystem..."));
     if (!settings->shell->run(cmd)) {
