@@ -6,3 +6,4 @@ manual/hamonikr-snapshot.8.gz		usr/share/man/man8
 translations/*.qm		            usr/share/hamonikr-snapshot/locale
 live-files/*                        usr/local/share/live-files
 excludes/*                          usr/local/share/excludes
+iso-template/*                      usr/lib/iso-template
