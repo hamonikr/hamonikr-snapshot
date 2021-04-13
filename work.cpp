@@ -141,9 +141,6 @@ void Work::closeInitrd(const QString &initrd_dir, const QString &file)
     cmd = "(find . -print0 | cpio --null --create --format=newc --owner root:root | xz --format=lzma) >>\"" + file + "\"";
     settings->shell->run(cmd);
 
-    cmd = "chmod" + file + "\"";
-    settings->shell->run(cmd);
-
     QDir::setCurrent(initrd_dir);
 
     makeChecksum(HashType::md5, settings->work_dir + "/iso-template/casper", "initrd.lz");
