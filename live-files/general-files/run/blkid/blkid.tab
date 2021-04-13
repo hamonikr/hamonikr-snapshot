@@ -1,0 +1,2 @@
+<device DEVNO="0x0801" TIME="1605625516.741523" UUID="D78B-80FC" TYPE="vfat" PARTLABEL="EFI System Partition" PARTUUID="613681da-3734-42ae-a3bb-71e6b0cc800f">/dev/sda1</device>
+<device DEVNO="0x0802" TIME="1605625520.691582" UUID="4d38e649-2a52-463c-ac6c-518a968e3dae" TYPE="ext4" PARTUUID="24dc7c1d-30df-46f3-9e5a-738903b4a56d">/dev/sda2</device>

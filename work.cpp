@@ -1,6 +1,7 @@
 /**********************************************************************
  *  work.cpp
  **********************************************************************
+ * Copyright (C) 2021 HamoniKR
  * Copyright (C) 2020 MX Authors
  *
  * Authors: Adrian
@@ -155,11 +156,7 @@ void Work::copyModules(const QString &to, const QString &kernel)
     QString kernel586 = "3.16.0-4-586";
     QString cmd = QString("/usr/share/hamonikr-snapshot/scripts/copy-initrd-modules -t=\"%1\" -k=\"%2\"").arg(to).arg(kernel);
     settings->shell->run(cmd);
-    // copy 586 modules for the non-PAE kernel
-    if (settings->i686 && settings->debian_version < 9) {  // Not applicable for Stretch (MX17) or more
-        QString cmd = QString("/usr/share/hamonikr-snapshot/scripts/copy-initrd-modules -t=\"%1\" -k=\"%2\"").arg(to).arg(kernel586);
-        settings->shell->run(cmd);
-    }
+
     cmd = QString("/usr/share/hamonikr-snapshot/scripts/copy-initrd-programs --to=\"%1\"").arg(to);
     settings->shell->run(cmd);
 }
@@ -174,25 +171,11 @@ void Work::copyNewIso()
     QString cmd = "tar xf /usr/lib/iso-template/iso-template.tar.gz";
     settings->shell->run(cmd);
 
-    // cmd = "cp /usr/lib/iso-template/template-initrd.gz iso-template/antiX/initrd.gz";
     cmd = "cp /usr/lib/iso-template/template-initrd.lz iso-template/casper/initrd.lz";
     settings->shell->run(cmd);
 
-    // cmd = "cp /boot/vmlinuz-" + settings->kernel + " iso-template/antiX/vmlinuz";
     cmd = "cp /boot/vmlinuz-" + settings->kernel + " iso-template/casper/vmlinuz";    
     settings->shell->run(cmd);
-
-    // // support x64 only
-    // if (settings->debian_version < 9) { // Only for versions older than Stretch
-    //     if (settings->i686) {
-    //         settings->shell->run("cp /boot/vmlinuz-3.16.0-4-586 iso-template/antiX/vmlinuz1");
-    //     } else {
-    //         // mv x64 template files over
-    //         settings->shell->run("mv iso-template/boot/grub/grub.cfg_x64 iso-template/boot/grub/grub.cfg");
-    //         settings->shell->run("mv iso-template/boot/syslinux/syslinux.cfg_x64 iso-template/boot/syslinux/syslinux.cfg");
-    //         settings->shell->run("mv iso-template/boot/isolinux/isolinux.cfg_x64 iso-template/boot/isolinux/isolinux.cfg");
-    //     }
-    // }
 
     replaceMenuStrings();
     makeChecksum(HashType::md5, settings->work_dir + "/iso-template/casper", "vmlinuz");
@@ -213,7 +196,6 @@ void Work::copyNewIso()
     settings->shell->run("test -r /etc/initrd-release && cp /etc/initrd-release \"" + path + "/etc\""); // overwrite with this file, probably a better location _if_ the file exists
     if (initrd_dir.isValid()) {
         copyModules(path, settings->kernel);
-        // closeInitrd(path, settings->work_dir + "/iso-template/antiX/initrd.gz");
         closeInitrd(path, settings->work_dir + "/iso-template/casper/initrd.lz");
         initrd_dir.remove();
     }
@@ -226,11 +208,11 @@ bool Work::createIso(const QString &filename)
     // squash the filesystem copy
     QDir::setCurrent(settings->work_dir);
     QString cmd;
-    // cmd = "mksquashfs /.bind-root iso-template/antiX/linuxfs -comp " + settings->compression + ((settings->mksq_opt.isEmpty()) ? "" : " " + settings->mksq_opt)
-    //         + " -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
-    
+    cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -comp " + settings->compression + ((settings->mksq_opt.isEmpty()) ? "" : " " + settings->mksq_opt)
+             + " -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;    
+
     // Removed compression options
-    cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
+    // cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
 
     emit message(tr("Squashing filesystem..."));
     if (!settings->shell->run(cmd)) {
