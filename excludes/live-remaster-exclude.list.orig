@@ -4,8 +4,8 @@
 # Files to be excluded when a live-remaster is created.
 # The original list is available in live-remaster-exclude.orig.
 #--------------------------------------------------------------------
-#dev/*
-#dev/.[^.]*
+dev/*
+dev/.[^.]*
 etc/defaultdomain
 etc/fstab.*
 etc/ioctl.save
