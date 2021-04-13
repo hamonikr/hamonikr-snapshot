@@ -7,3 +7,4 @@ translations/*.qm		            usr/share/hamonikr-snapshot/locale
 live-files/*                        usr/local/share/live-files
 excludes/*                          usr/local/share/excludes
 iso-template/*                      usr/lib/iso-template
+installed-to-live                   usr/sbin

@@ -228,9 +228,9 @@ bool Work::createIso(const QString &filename)
     QString cmd;
     // cmd = "mksquashfs /.bind-root iso-template/antiX/linuxfs -comp " + settings->compression + ((settings->mksq_opt.isEmpty()) ? "" : " " + settings->mksq_opt)
     //         + " -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
-
-    cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -comp " + settings->compression + ((settings->mksq_opt.isEmpty()) ? "" : " " + settings->mksq_opt)
-            + " -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
+    
+    // Removed compression options
+    cmd = "mksquashfs /.bind-root iso-template/casper/filesystem.squashfs -wildcards -ef " + settings->snapshot_excludes.fileName() + " " + settings->session_excludes;
 
     emit message(tr("Squashing filesystem..."));
     if (!settings->shell->run(cmd)) {
@@ -259,7 +259,7 @@ bool Work::createIso(const QString &filename)
 
     // create the iso file
     QDir::setCurrent(settings->work_dir + "/iso-template");
-    cmd = "xorriso -as mkisofs -l -V HamoniKR-LIVE -R -J -pad -iso-level 3 -no-emul-boot -boot-load-size 4 -boot-info-table -b isolinux/isolinux.bin  -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -c isolinux/boot.cat -o \"" +
+    cmd = "xorriso -as mkisofs -l -V HLIVE -R -J -pad -iso-level 3 -no-emul-boot -boot-load-size 4 -boot-info-table -b isolinux/isolinux.bin  -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot -c isolinux/boot.cat -o \"" +
             settings->snapshot_dir + "/" + filename + "\" . \""  + settings->work_dir + "/iso-2\"";
     emit message(tr("Creating CD/DVD image file..."));
     if (!settings->shell->run(cmd)) {
